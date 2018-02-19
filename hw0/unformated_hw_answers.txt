@@ -1,0 +1,6 @@
+1. 7.7 gigs
+2. 1 gig
+3. 63000 kilos
+4. 4.4.0-1047-aws
+5. 12:80:51:01:0f:fe
+6. run dat command
