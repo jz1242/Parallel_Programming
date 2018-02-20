@@ -17,8 +17,9 @@
 #include <assert.h>
 
 /* Example filter sizes */
-#define DATA_LEN  512*512*256
-#define FILTER_LEN  512
+//#define DATA_LEN  512*512*256
+#define DATA_LEN  512*512
+#define FILTER_LEN  1024
 
 
 /* Subtract the `struct timeval' values X and Y,
@@ -109,14 +110,60 @@ void serialDataFirst ( int data_len, unsigned int* input_array, unsigned int* ou
 /* Function to apply the filter with the filter list in the outside loop */
 void parallelFilterFirst ( int data_len, unsigned int* input_array, unsigned int* output_array, int filter_len, unsigned int* filter_list )
 {
-  return;
+    /* Variables for timing */
+  struct timeval ta, tb, tresult;
+
+  /* get initial time */
+  gettimeofday ( &ta, NULL );
+  #pragma omp parallel 
+  /* for all elements in the filter */ 
+  for (int y=0; y<filter_len; y++) { 
+    /* for all elements in the data */
+    for (int x=0; x<data_len; x++) {
+      /* it the data element matches the filter */ 
+      if (input_array[x] == filter_list[y]) {
+        /* include it in the output */
+        output_array[x] = input_array[x];
+      }
+    }
+  }
+
+  /* get initial time */
+  gettimeofday ( &tb, NULL );
+
+  timeval_subtract ( &tresult, &tb, &ta );
+
+  printf ("Parallel filter first took %lu seconds and %lu microseconds.  Filter length = %d\n", tresult.tv_sec, tresult.tv_usec, filter_len );
 }
 
 
 /* Function to apply the filter with the filter list in the outside loop */
 void parallelDataFirst ( int data_len, unsigned int* input_array, unsigned int* output_array, int filter_len, unsigned int* filter_list )
 {
-  return;
+    /* Variables for timing */
+  struct timeval ta, tb, tresult;
+
+  /* get initial time */
+  gettimeofday ( &ta, NULL );
+  #pragma omp parallel 
+  /* for all elements in the data */
+  for (int x=0; x<data_len; x++) {
+    /* for all elements in the filter */ 
+    for (int y=0; y<filter_len; y++) { 
+      /* it the data element matches the filter */ 
+      if (input_array[x] == filter_list[y]) {
+        /* include it in the output */
+        output_array[x] = input_array[x];
+      }
+    }
+  }
+
+  /* get initial time */
+  gettimeofday ( &tb, NULL );
+
+  timeval_subtract ( &tresult, &tb, &ta );
+
+  printf ("Parallel data first took %lu seconds and %lu microseconds.  Filter length = %d\n", tresult.tv_sec, tresult.tv_usec, filter_len );
 }
 
 
@@ -175,13 +222,13 @@ int main( int argc, char** argv )
     checkData ( serial_array, output_array );
     memset ( output_array, 0, DATA_LEN );
 
-//    parallelFilterFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
-//    checkData ( serial_array, output_array );
-//    memset ( output_array, 0, DATA_LEN );
+    parallelFilterFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
+    checkData ( serial_array, output_array );
+    memset ( output_array, 0, DATA_LEN );
 
-//    parallelDataFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
-//    checkData ( serial_array, output_array );
-//    memset ( output_array, 0, DATA_LEN );
+    parallelDataFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
+    checkData ( serial_array, output_array );
+    memset ( output_array, 0, DATA_LEN );
   }
 }
 
