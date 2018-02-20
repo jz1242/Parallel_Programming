@@ -230,5 +230,24 @@ int main( int argc, char** argv )
     checkData ( serial_array, output_array );
     memset ( output_array, 0, DATA_LEN );
   }
+  /* part 2
+  int filter_len = 512;
+  for ( int i = 1; i <=16 ; i*=2) 
+  {
+    serialDataFirst ( DATA_LEN, input_array, serial_array, filter_len, filter_list );
+    memset ( output_array, 0, DATA_LEN );
+
+    serialFilterFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
+    checkData ( serial_array, output_array );
+    memset ( output_array, 0, DATA_LEN );
+
+    parallelFilterFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
+    checkData ( serial_array, output_array );
+    memset ( output_array, 0, DATA_LEN );
+
+    parallelDataFirst ( DATA_LEN, input_array, output_array, filter_len, filter_list );
+    checkData ( serial_array, output_array );
+    memset ( output_array, 0, DATA_LEN );
+  }*/
 }
 
