@@ -115,7 +115,7 @@ void parallelFilterFirst ( int data_len, unsigned int* input_array, unsigned int
 
   /* get initial time */
   gettimeofday ( &ta, NULL );
-  //#pragma omp parallel for
+  #pragma omp parallel for
   /* for all elements in the filter */ 
   for (int y=0; y<filter_len; y++) { 
     /* for all elements in the data */
@@ -145,7 +145,7 @@ void parallelDataFirst ( int data_len, unsigned int* input_array, unsigned int* 
 
   /* get initial time */
   gettimeofday ( &ta, NULL );
-  //#pragma omp parallel for
+  #pragma omp parallel for
   /* for all elements in the data */
   for (int x=0; x<data_len; x++) {
     /* for all elements in the filter */ 
