@@ -5,7 +5,7 @@ public class CoinFlip implements Runnable {
     int thread_id; 
     public static int heads = 0;
     public static int tails = 0;
-    public static int counter;
+    private int counter;
     //public static int runs;
     private int localHeads = 0;
     private Random rand;
@@ -22,9 +22,10 @@ public class CoinFlip implements Runnable {
     }
 
     // Constructor: set thread id
-    CoinFlip(int id) {
+    CoinFlip(int id, int count) {
         this.rand = new Random();
         this.thread_id = id;
+        this.counter = count;
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -35,10 +36,18 @@ public class CoinFlip implements Runnable {
         long start = System.currentTimeMillis();
         long end;
         int numThreads = Integer.parseInt(args[0]);
-        counter = Integer.parseInt(args[1])/numThreads;
+        int counter = Integer.parseInt(args[1])/numThreads;
+        int extra = 0;
+        if(Integer.parseInt(args[1]) % numThreads != 0) {
+            extra = Integer.parseInt(args[1]) % numThreads;
+        }
         Thread[] allThreads = new Thread[numThreads];
         for (int i = 0; i < numThreads; i++) {
-            allThreads[i] = new Thread(new CoinFlip(i));
+            if(i == 0) {
+                allThreads[i] = new Thread(new CoinFlip(i, counter + extra));
+                allThreads[i].start();
+            }
+            allThreads[i] = new Thread(new CoinFlip(i, counter));
             allThreads[i].start();
 
         }
