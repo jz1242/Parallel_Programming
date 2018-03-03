@@ -9,12 +9,48 @@ import java.util.Random;
 import javax.crypto.SealedObject;
 
 public class BruteForceDES implements Runnable{
-    public BruteForceDES() {
-        
+    private long startkey;
+    private long endkey;
+    private long timestart;
+    private SealedObject sldObj;
+    private int thread_id;
+    private SealedDES deccipher;
+    private String plainstr;
+    
+    public BruteForceDES(int id, long start, long end, long time, SealedObject encrypt, String plainstr) {
+        this.thread_id = id;
+        this.startkey = start;
+        this.endkey = end;
+        this.timestart = time;
+        this.sldObj = encrypt;
+        this.deccipher = new SealedDES ();
+        this.plainstr = plainstr;
     }
     @Override
     public void run() {
-        // TODO Auto-generated method stub
+        // Search for the right key
+        for ( long i = startkey; i < endkey; i++ )
+        {
+            // Set the key and decipher the object
+            deccipher.setKey ( i );
+            String decryptstr = deccipher.decrypt ( sldObj );
+
+            // Does the object contain the known plaintext
+            if (( decryptstr != null ) && ( decryptstr.contains(plainstr)))
+            {
+                //  Remote printlns if running for time.
+                //p.printf("Found decrypt key %016x producing message: %s\n", i , decryptstr);
+                System.out.println (  "Found decrypt key " + i + " producing message: " + decryptstr );
+            }
+
+            // Update progress every once in awhile.
+            //  Remote printlns if running for time.
+            if ( i % 100000 == 0 )
+            {
+                long elapsed = System.currentTimeMillis() - timestart;
+                System.out.println("Thread " + thread_id + " Searched key number " + i + " at " + elapsed + " milliseconds.");
+            }
+        }
         
     }
     public static void main(String[] args) throws IOException {
@@ -68,31 +104,33 @@ public class BruteForceDES implements Runnable{
         long runstart;
         runstart = System.currentTimeMillis();
 
-        // Create a simple cipher
-        SealedDES deccipher = new SealedDES ();
-
         // Search for the right key
-        for ( long i = 0; i < maxkey; i++ )
-        {
-            // Set the key and decipher the object
-            deccipher.setKey ( i );
-            String decryptstr = deccipher.decrypt ( sldObj );
-
-            // Does the object contain the known plaintext
-            if (( decryptstr != null ) && ( decryptstr.contains(plainstr)))
+        long numkeys = maxkey / threads;
+        long extrakeys = maxkey % threads;
+        Thread[] allthreads = new Thread[threads];
+        long start = 0;
+        long end = numkeys;
+        for(int i = 0; i < threads; i++) {
+            if(i == threads - 1 && extrakeys != 0) {
+                end += extrakeys;
+            }
+            allthreads[i] = new Thread(new BruteForceDES(i, start, end, runstart, sldObj, plainstr));
+            allthreads[i].start();
+            start += numkeys;
+            end += numkeys;
+            
+        }
+        for (int j = 0; j < threads; j++) {
+            try {
+                allthreads[j].join();
+            }
+            catch (Exception e)
             {
-                //  Remote printlns if running for time.
-                //p.printf("Found decrypt key %016x producing message: %s\n", i , decryptstr);
-                System.out.println (  "Found decrypt key " + i + " producing message: " + decryptstr );
+                System.out.println("Thread interrupted.  Exception: " + e.toString() +
+                           " Message: " + e.getMessage()) ;
+                return;
             }
 
-            // Update progress every once in awhile.
-            //  Remote printlns if running for time.
-            if ( i % 100000 == 0 )
-            {
-                long elapsed = System.currentTimeMillis() - runstart;
-                System.out.println ( "Searched key number " + i + " at " + elapsed + " milliseconds.");
-            }
         }
 
         // Output search time
