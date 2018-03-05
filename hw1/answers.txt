@@ -1,0 +1,10 @@
+S(s) = 1/((1 - p) + (p/s))
+2.
+b. Around 4 times speedup
+3.
+a. Data was slightly faster
+b.  1	0
+	2   1.000001
+	4	0.999815
+	8	0.877228
+	16	0.815466
