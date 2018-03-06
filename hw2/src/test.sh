@@ -2,9 +2,9 @@
 
 javac CoinFlip.java
 
-flip=1000000000
+flip=10
 threads=32
 for (( i = 1; i <= $threads; i*=2 )); 
 do
-	java CoinFlip $threads $flip >>threads$i.txt
+	java CoinFlip $threads $flip >>data.txt
 done

@@ -2,10 +2,8 @@ import java.util.*;
 
 public class CoinFlip implements Runnable {
     int thread_id; 
-    public static int heads = 0;
-    public static int tails = 0;
     private int counter;
-    private int localHeads = 0;
+    public int localHeads = 0;
     private Random rand;
 
     public void run() {
@@ -13,9 +11,6 @@ public class CoinFlip implements Runnable {
             if (rand.nextInt(2) == 0) {
                 localHeads++;
             }
-        }
-        synchronized (CoinFlip.class) {
-            heads += localHeads;
         }
     }
 
@@ -36,14 +31,20 @@ public class CoinFlip implements Runnable {
         int numThreads = Integer.parseInt(args[0]);
         int counter = Integer.parseInt(args[1])/numThreads;
         int extra = Integer.parseInt(args[1]) % numThreads;
+        int totalHeads = 0;
         Thread[] allThreads = new Thread[numThreads];
+        CoinFlip[] objs = new CoinFlip[numThreads];
         for (int i = 0; i < numThreads; i++) {
             if(i == 0) {
-                allThreads[i] = new Thread(new CoinFlip(i, counter + extra));
+                CoinFlip coin = new CoinFlip(i, counter + extra);
+                objs[i] = coin;
+                allThreads[i] = new Thread(coin);
                 allThreads[i].start();
             }
             else {
-                allThreads[i] = new Thread(new CoinFlip(i, counter));
+                CoinFlip coin = new CoinFlip(i, counter + extra);
+                objs[i] = coin;
+                allThreads[i] = new Thread(coin);
                 allThreads[i].start();
             }
 
@@ -51,6 +52,7 @@ public class CoinFlip implements Runnable {
         for (int j = 0; j < numThreads; j++) {
             try {
                 allThreads[j].join();
+                totalHeads += objs[j].localHeads;
             }
             catch (Exception e)
             {
@@ -60,7 +62,7 @@ public class CoinFlip implements Runnable {
             }
 
         }
-        System.out.println(heads + " heads in "+ Integer.parseInt(args[1])+ " coin tosses");
+        System.out.println(totalHeads + " heads in "+ Integer.parseInt(args[1])+ " coin tosses");
         end = System.currentTimeMillis() - start;
         System.out.println("Elapsed Time: "+ end + "ms");
     }

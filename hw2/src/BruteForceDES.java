@@ -45,11 +45,11 @@ public class BruteForceDES implements Runnable{
 
             // Update progress every once in awhile.
             //  Remote printlns if running for time.
-            if ( i % 100000 == 0 )
+            /*if ( i % 100000 == 0 )
             {
                 long elapsed = System.currentTimeMillis() - timestart;
                 System.out.println("Thread " + thread_id + " Searched key number " + i + " at " + elapsed + " milliseconds.");
-            }
+            }*/
         }
         
     }
@@ -136,7 +136,8 @@ public class BruteForceDES implements Runnable{
         // Output search time
         long elapsed = System.currentTimeMillis() - runstart;
         long keys = maxkey + 1;
-        System.out.println ( "Completed search of " + keys + " keys at " + elapsed + " milliseconds.");
+        //System.out.println ( "Completed search of " + keys + " keys at " + elapsed + " milliseconds.");
+        System.out.println ( "Keys searched: " + keys + " in " + elapsed + "ms");
     }
     
 }
