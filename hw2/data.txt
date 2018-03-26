@@ -1,0 +1,12 @@
+500024411 heads in 1000000000 coin tosses
+Elapsed Time: 11930ms
+500009175 heads in 1000000000 coin tosses
+Elapsed Time: 5991ms
+499983984 heads in 1000000000 coin tosses
+Elapsed Time: 3209ms
+499982203 heads in 1000000000 coin tosses
+Elapsed Time: 1540ms
+499972518 heads in 1000000000 coin tosses
+Elapsed Time: 993ms
+499982275 heads in 1000000000 coin tosses
+Elapsed Time: 1022ms

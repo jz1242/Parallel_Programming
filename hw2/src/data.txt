@@ -1,0 +1,12 @@
+6 heads in 10 coin tosses
+Elapsed Time: 40ms
+6 heads in 10 coin tosses
+Elapsed Time: 47ms
+8 heads in 10 coin tosses
+Elapsed Time: 138ms
+2 heads in 10 coin tosses
+Elapsed Time: 113ms
+7 heads in 10 coin tosses
+Elapsed Time: 54ms
+5 heads in 10 coin tosses
+Elapsed Time: 62ms
