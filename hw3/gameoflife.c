@@ -12,9 +12,51 @@
 #define GRID_WIDTH  256
 #define DIM  16     // assume a square grid
 
-void update(int grid[], int dim, int start, int end);
-int checkNeighbors(const int grid[], int dim, int pos);
-int mod (int a, int b);
+int checkNeighbors(int grid[], int ind) {
+    int col = ind % DIM;
+    int row = ind / DIM;
+    int totalNeighbors = 0;
+    for(int i = -1; i <= 1; i++){
+        for(int j = -1; j <= 1; j++){
+            int new_row = (row + i) % DIM;
+            int new_col = (col + j) % DIM;
+            if(new_row < 0){
+                new_row += DIM;
+            }
+            if(new_col < 0){
+                new_col += DIM;
+            }
+            int new_ind = new_col + DIM*new_row;
+            if(new_ind != ind){
+                totalNeighbors += grid[new_ind];
+
+            }
+
+        }
+    }
+    return totalNeighbors;
+}
+
+void update(int grid[], int begin, int end) {
+    int nb[GRID_WIDTH];
+    for (int i = begin; i < end; i++) {
+        nb[i] = checkNeighbors(grid, i);
+    }
+    for (int j = begin; j < end; j++) {
+        if (grid[j] == 1){
+            if(nb[j] != 2 && nb[j] != 3){
+                grid[j] = 0;
+            }
+        }
+        else if (grid[j] == 0){
+            if(nb[j] == 3){
+                grid[j] = 1;
+            }
+        }
+
+    }
+}
+
 int main ( int argc, char** argv ) {
     
 
@@ -70,36 +112,27 @@ int main ( int argc, char** argv ) {
   assert ( DIM % num_procs == 0 );
 
   // TODO Setup your environment as necessary
-  int block_size = DIM*(DIM/num_procs);
-  int id_start = block_size*ID;
 
-
-
-  
-  int id_end = id_start + DIM*(DIM/num_procs  - 1);
+  int block = DIM*(DIM/num_procs);
+  int start = block*ID;
+  int end = start + block;
   int prev = (ID - 1) % num_procs < 0 ? ((ID - 1) % num_procs) + num_procs : (ID - 1) % num_procs;
   int next = (ID + 1) % num_procs < 0 ? ((ID + 1) % num_procs) + num_procs : (ID + 1) % num_procs; 
-  int prev_offset = mod(id_start - DIM, GRID_WIDTH);
-  int next_offset = mod(id_end + DIM, GRID_WIDTH);
-  //int block_size = DIM*DIM;
-  /*if (ID == 0)
-      curr_grid = malloc(sizeof(int) * GRID_WIDTH * num_procs);
-  */
 
   for ( iters = 0; iters < num_iterations; iters++ ) {
     // TODO: Add Code here or a function call to you MPI code
-        if (ID % 2 == 0) {
-            MPI_Ssend(global_grid + id_start, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD);
-            MPI_Ssend(global_grid + id_end, DIM, MPI_INT, next, 2, MPI_COMM_WORLD);
-            MPI_Recv(global_grid + next_offset, DIM, MPI_INT, next, 2, MPI_COMM_WORLD, &stat);
-            MPI_Recv(global_grid + prev_offset, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD, &stat);
-        } else {
-            MPI_Recv(global_grid + next_offset, DIM, MPI_INT, next, 2, MPI_COMM_WORLD, &stat);
-            MPI_Recv(global_grid + prev_offset, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD, &stat);
-            MPI_Ssend(global_grid + id_start, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD);
-            MPI_Ssend(global_grid + id_end, DIM, MPI_INT, next, 2, MPI_COMM_WORLD);
-        }
-        update(global_grid, DIM, id_start, id_start + block_size);
+    if (ID % 2 == 0) {
+      MPI_Ssend(global_grid + start, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD);
+      MPI_Ssend(global_grid + end - DIM, DIM, MPI_INT, next, 2, MPI_COMM_WORLD);
+      MPI_Recv(global_grid + (GRID_WIDTH + start-DIM)%GRID_WIDTH, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD, &stat);
+      MPI_Recv(global_grid + end, DIM, MPI_INT, next, 2, MPI_COMM_WORLD, &stat);
+    } else {
+      MPI_Recv(global_grid + (GRID_WIDTH + end)%GRID_WIDTH, DIM, MPI_INT, next, 2, MPI_COMM_WORLD, &stat);
+      MPI_Recv(global_grid + (GRID_WIDTH + start-DIM)%GRID_WIDTH, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD, &stat);
+      MPI_Ssend(global_grid + end-DIM, DIM, MPI_INT, next, 2, MPI_COMM_WORLD);
+      MPI_Ssend(global_grid + start, DIM, MPI_INT, prev, 2, MPI_COMM_WORLD);
+    }
+    update(global_grid, start, end);
     // Output the updated grid state
     if ( ID == 0 ) {
       printf ( "\nIteration %d: final grid:\n", iters );
@@ -117,58 +150,7 @@ int main ( int argc, char** argv ) {
   MPI_Finalize(); // finalize so I can exit
 }
 
-void update(int grid[], int dim, int start, int end) {
-    int neighbors[GRID_WIDTH];
-    for (int i = start; i < end; i++) {
-        neighbors[i] = checkNeighbors(grid, dim, i);
-    }
-    for (int j = start; j < end;  j++) {
-        if (grid[j] == 1){
-            if(neighbors[j] != 2 && neighbors[j] != 3){
-                grid[j] = 0;
-            }
-        }
-        else if (grid[j] == 0){
-            if(neighbors[j] == 3){
-                grid[j] = 1;
-            }
-        }
 
-    }
-}
-
-int checkNeighbors(const int grid[], int dim, int pos) {
-    int col = pos % dim;
-    int row = pos / dim;
-    int totalNeighbors = 0;
-    for(int i = -1; i <= 1; i++){
-        for(int j = -1; j <= 1; j++){
-            int new_row = (row + i) % dim;
-            int new_col = (col + j) % dim;
-            if(new_row < 0){
-                new_row += dim;
-            }
-            if(new_col < 0){
-                new_col += dim;
-            }
-            int new_pos = new_col + dim*new_row;
-            if(new_pos != pos){
-                totalNeighbors += grid[new_pos];
-
-            }
-
-        }
-    }
-    return totalNeighbors;
-}
-int mod (int a, int b) {
-    if(b < 0)
-        return mod(a, -b);
-    int mod = a % b;
-    if(mod < 0)
-        mod+=b;
-    return mod;
-}
 
 
 
